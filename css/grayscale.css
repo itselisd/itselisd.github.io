@@ -371,7 +371,7 @@ img::-moz-selection {
 .rig-img {
   display:block;
   width: 100%;
-  height: 250px;
+  height: auto;
   border:none;
   transform:scale(1);
   transition:all 1s;
