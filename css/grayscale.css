@@ -476,7 +476,6 @@ hr {
   padding: 6px 10px;
   cursor: pointer;
   font-size: 18px;
-  margin-bottom: 20px;
   float:right;
   border-radius: 2%;
 }
@@ -484,6 +483,10 @@ hr {
 /* Darker background on mouse-over */
 #dlbtn:hover {
   background-color: rgb(77, 77, 77);
+}
+
+.about-bottom {
+  margin-bottom: 20px;
 }
 
 #port-head {
