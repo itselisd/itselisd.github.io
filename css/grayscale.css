@@ -70,6 +70,10 @@ a:focus, a:hover {
   font-weight: 700;
 }
 
+#mainNav .navbar-brand {
+  font-weight: 700;
+}
+
 #mainNav a {
   color: white;
 }
@@ -83,7 +87,7 @@ a:focus, a:hover {
 #mainNav .navbar-nav .nav-item:hover {
   color: fade(white, 80%);
   outline: none;
-  background-color: transparent;
+  background-color: #7A7A7A;
 }
 
 #mainNav .navbar-nav .nav-item:active, #mainNav .navbar-nav .nav-item:focus {
