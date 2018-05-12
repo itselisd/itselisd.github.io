@@ -317,8 +317,8 @@ img::-moz-selection {
 
 #profile-pic {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
   border-radius: 100%;
   float: left;
   margin-right: 15px;
@@ -327,8 +327,9 @@ img::-moz-selection {
 #about-me {
   color: white;
   margin-top: 30px;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
   text-align: center;
+  font-size: 40px;
 }
 
 #portfolio {
@@ -467,4 +468,9 @@ hr {
 /* Darker background on mouse-over */
 #dlbtn:hover {
   background-color: rgb(77, 77, 77);
+}
+
+#port-head {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, .8);
+  font-size: 40px;
 }
