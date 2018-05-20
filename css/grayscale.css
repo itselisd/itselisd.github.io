@@ -333,9 +333,9 @@ img::-moz-selection {
 
 #profile-pic {
   position: relative;
-  width: 27%;
-  height: 32%;
-  border-radius: 100%;
+  width: 26%;
+  height: 31%;
+  border-radius: 4%;
   float: left;
   margin-right: 15px;
 }
@@ -470,19 +470,17 @@ hr {
 }
 
 #dlbtn {
-  background-color: rgb(157, 157, 157);
-  border: none;
-  color: white;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 18px;
+  color: #42DCA3;
+  border: 1px solid #42DCA3;
   float:right;
-  border-radius: 2%;
+  background-color: transparent;
 }
 
-/* Darker background on mouse-over */
-#dlbtn:hover {
-  background-color: rgb(77, 77, 77);
+#dlbtn:focus, #dlbtn:hover {
+  color: black;
+  border: 1px solid #42DCA3;
+  outline: none;
+  background-color: #42DCA3;
 }
 
 .about-bottom {
