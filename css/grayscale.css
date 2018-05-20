@@ -333,8 +333,8 @@ img::-moz-selection {
 
 #profile-pic {
   position: relative;
-  width: 180px;
-  height: 180px;
+  width: 27%;
+  height: 32%;
   border-radius: 100%;
   float: left;
   margin-right: 15px;
