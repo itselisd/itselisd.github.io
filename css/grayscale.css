@@ -335,7 +335,7 @@ img::-moz-selection {
   position: relative;
   width: 26%;
   height: 31%;
-  border-radius: 4%;
+  border-radius: 100%;
   float: left;
   margin-right: 15px;
 }
