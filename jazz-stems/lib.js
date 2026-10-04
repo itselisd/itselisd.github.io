@@ -73,6 +73,9 @@ export async function separateStems(session, mixL, mixR, onProgress, makeTensor)
     const elapsed = (Date.now() - t0) / 1000;
     const eta = (elapsed / (i + 1)) * (nChunks - i - 1);
     if (onProgress) onProgress((i + 1) / nChunks, eta, i + 1, nChunks);
+    // Yield so the browser repaints the progress bar between chunks.
+    // Without this the tab looks frozen during long runs.
+    await new Promise((r) => setTimeout(r, 0));
   }
 
   for (let s = 0; s < 6; s++) {
