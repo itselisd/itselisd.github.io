@@ -187,6 +187,12 @@ async function ensureSession() {
   const bytes = await ensureModelBytes(showModelProgress);
   modelProgressWrap.hidden = true;
 
+  // Session creation compiles GPU shaders on first run and can take a
+  // minute or two with no progress events. Say so explicitly, otherwise
+  // this phase looks exactly like a frozen page.
+  fileStatus.textContent =
+    "Starting the model (first run compiles GPU shaders, can take a minute or two) ...";
+
   // Try WebGPU first (fast). Fall back to WASM, and if the optimizing
   // session build runs out of memory, retry with optimizations off.
   // Chain: webgpu/all -> wasm/all -> wasm/disabled.
