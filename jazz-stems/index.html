@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jazz Stems, in-browser stem separator</title>
+<style>
+  :root {
+    --bg: #0c0e13;
+    --panel: #141824;
+    --panel-2: #1a2030;
+    --border: #262d42;
+    --text: #e9ebf2;
+    --muted: #9aa3b8;
+    --accent: #f0a832;
+    --accent-dim: #8a5f1c;
+    --danger: #e5484d;
+    --solo: #ffd60a;
+    --ok: #3ddc84;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main { max-width: 1060px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  header.top { text-align: center; margin-bottom: 2rem; }
+  header.top h1 { font-size: 2.4rem; margin: 0 0 .25rem; letter-spacing: .5px; }
+  header.top h1 .note { color: var(--accent); }
+  header.top p { color: var(--muted); margin: 0; max-width: 640px; margin-inline: auto; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card h2 { font-size: 1.05rem; margin: 0 0 .75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+  .row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+  button {
+    font: inherit;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .55rem 1.1rem;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #1a1206; font-weight: 700; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.08); }
+  .status { color: var(--muted); font-size: .95rem; }
+  .status strong { color: var(--text); }
+  .pill {
+    display: inline-block; font-size: .8rem; padding: .15rem .6rem; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--muted);
+  }
+  .pill.ok { color: var(--ok); border-color: var(--ok); }
+  .pill.warn { color: var(--accent); border-color: var(--accent-dim); }
+
+  #dropzone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  #dropzone:hover, #dropzone.over { border-color: var(--accent); background: #151a28; }
+  #dropzone .big { font-size: 1.25rem; font-weight: 600; margin-bottom: .25rem; }
+  #dropzone .small { color: var(--muted); font-size: .9rem; }
+  #file-input { display: none; }
+
+  .progress-wrap { margin-top: .5rem; }
+  .bar { height: 14px; background: #0a0c11; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); transition: width .2s; }
+  .progress-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .9rem; margin-top: .4rem; }
+
+  #transport { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  #play-btn { font-size: 1.3rem; width: 3.2rem; height: 3.2rem; border-radius: 50%; padding: 0; }
+  #seek { flex: 1 1 220px; accent-color: var(--accent); }
+  #time-label { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 7.5rem; text-align: right; }
+  .vol-wrap { display: flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .85rem; }
+  input[type="range"] { accent-color: var(--accent); }
+
+  #mixer { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .8rem; }
+  .strip {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .9rem;
+    display: flex; flex-direction: column; gap: .55rem;
+  }
+  .strip .name { font-weight: 700; font-size: 1.05rem; text-align: center; letter-spacing: .5px; }
+  .strip .btns { display: flex; gap: .5rem; }
+  .mute-btn { flex: 1; font-weight: 800; letter-spacing: 1px; padding: .7rem 0; }
+  .mute-btn.active { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .solo-btn { flex: 0 0 3.2rem; font-weight: 800; }
+  .solo-btn.active { background: var(--solo); border-color: var(--solo); color: #1a1500; }
+  .strip label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .strip input[type="range"] { width: 100%; }
+  .dl-btn { font-size: .85rem; padding: .4rem 0; width: 100%; }
+
+  #master-actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1.25rem; }
+  details.card summary { cursor: pointer; font-weight: 600; }
+  details.card ul { color: var(--muted); margin: .75rem 0 0; padding-left: 1.2rem; }
+  details.card li { margin-bottom: .4rem; }
+  details.card code { color: var(--text); background: #0a0c11; padding: .1rem .35rem; border-radius: 4px; font-size: .85em; }
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 2rem; }
+  footer a { color: var(--accent); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <h1>Jazz <span class="note">Stems</span></h1>
+    <p>Split any track into 6 stems, entirely in your browser. Mute the guitar or piano and comp over the rest of the band.</p>
+  </header>
+
+  <section class="card" id="model-card">
+    <h2>Step 1, Model</h2>
+    <div class="row">
+      <button class="primary" id="model-btn">Download model (130 MB)</button>
+      <span class="status" id="model-status">Model not downloaded yet.</span>
+      <span class="pill" id="provider-pill">checking hardware</span>
+    </div>
+    <div class="progress-wrap" id="model-progress-wrap" hidden>
+      <div class="bar"><div id="model-bar"></div></div>
+      <div class="progress-meta"><span id="model-progress-label">Downloading</span><span id="model-progress-pct"></span></div>
+    </div>
+    <p class="status" style="margin-bottom:0">Downloads once from Hugging Face, then it is cached in your browser. Your audio is processed locally and never uploaded anywhere.</p>
+  </section>
+
+  <section class="card" id="drop-card">
+    <h2>Step 2, Drop a track</h2>
+    <div id="dropzone" role="button" tabindex="0" aria-label="Drop an audio file here or click to browse">
+      <div class="big">Drop an MP3, WAV, M4A or FLAC here</div>
+      <div class="small">or click to browse, tracks up to 8 minutes</div>
+    </div>
+    <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.m4a,.flac,.ogg,.opus" />
+    <p class="status" id="file-status" style="margin-bottom:0"></p>
+  </section>
+
+  <section class="card" id="progress-card" hidden>
+    <h2>Separating</h2>
+    <div class="progress-wrap">
+      <div class="bar"><div id="sep-bar"></div></div>
+      <div class="progress-meta"><span id="sep-label">Starting</span><span id="sep-eta"></span></div>
+    </div>
+  </section>
+
+  <section class="card" id="studio-card" hidden>
+    <h2>Step 3, Mix</h2>
+    <div id="transport">
+      <button id="play-btn" aria-label="Play or pause">&#9654;</button>
+      <input type="range" id="seek" min="0" max="100" step="0.1" value="0" aria-label="Seek" />
+      <span id="time-label">0:00 / 0:00</span>
+      <span class="vol-wrap">Master <input type="range" id="master-vol" min="0" max="100" value="85" aria-label="Master volume" /></span>
+    </div>
+    <div id="mixer">
+      <div class="strip" data-stem="guitar">
+        <div class="name">Guitar</div>
+        <div class="btns"><button class="mute-btn">MUTE</button><button class="solo-btn">S</button></div>
+        <label>Volume <input type="range" class="vol" min="0" max="100" value="100" /></label>
+        <button class="dl-btn">Download WAV</button>
+      </div>
+      <div class="strip" data-stem="piano">
+        <div class="name">Piano</div>
+        <div class="btns"><button class="mute-btn">MUTE</button><button class="solo-btn">S</button></div>
+        <label>Volume <input type="range" class="vol" min="0" max="100" value="100" /></label>
+        <button class="dl-btn">Download WAV</button>
+      </div>
+      <div class="strip" data-stem="bass">
+        <div class="name">Bass</div>
+        <div class="btns"><button class="mute-btn">MUTE</button><button class="solo-btn">S</button></div>
+        <label>Volume <input type="range" class="vol" min="0" max="100" value="100" /></label>
+        <button class="dl-btn">Download WAV</button>
+      </div>
+      <div class="strip" data-stem="drums">
+        <div class="name">Drums</div>
+        <div class="btns"><button class="mute-btn">MUTE</button><button class="solo-btn">S</button></div>
+        <label>Volume <input type="range" class="vol" min="0" max="100" value="100" /></label>
+        <button class="dl-btn">Download WAV</button>
+      </div>
+      <div class="strip" data-stem="vocals">
+        <div class="name">Vocals</div>
+        <div class="btns"><button class="mute-btn">MUTE</button><button class="solo-btn">S</button></div>
+        <label>Volume <input type="range" class="vol" min="0" max="100" value="100" /></label>
+        <button class="dl-btn">Download WAV</button>
+      </div>
+      <div class="strip" data-stem="other">
+        <div class="name">Other</div>
+        <div class="btns"><button class="mute-btn">MUTE</button><button class="solo-btn">S</button></div>
+        <label>Volume <input type="range" class="vol" min="0" max="100" value="100" /></label>
+        <button class="dl-btn">Download WAV</button>
+      </div>
+    </div>
+    <div id="master-actions">
+      <button class="primary" id="dl-all">Download all stems (.zip)</button>
+      <button id="reset-btn">Start over</button>
+    </div>
+  </section>
+
+  <details class="card">
+    <summary>How it works, and limitations</summary>
+    <ul>
+      <li>Runs the <code>htdemucs_6s</code> neural network (Demucs by Meta AI Research) fully in this tab via <code>onnxruntime-web</code>, using the community ONNX export by StemSplit.</li>
+      <li>Separation is the model's best guess, not a perfect split. The Demucs authors note the piano stem can carry bleed and artifacts, while guitar usually comes out cleaner. Sparse mixes separate better than dense ones.</li>
+      <li>Speed depends on your hardware. WebGPU is much faster than CPU, expect a few minutes per track either way.</li>
+      <li>Tracks are capped at 8 minutes to keep browser memory in check. Six float32 stems add up fast.</li>
+      <li>Model weights are MIT licensed. What you do with someone else's song is between you and the rights holder.</li>
+    </ul>
+  </details>
+
+  <footer>
+    Built on Demucs (Meta AI Research, MIT) via StemSplit's ONNX export.<br />
+    Model: <a href="https://huggingface.co/StemSplitio/htdemucs-6s-onnx">StemSplitio/htdemucs-6s-onnx</a> on Hugging Face.
+  </footer>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
